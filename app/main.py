@@ -18,9 +18,11 @@ def find_executable(command):
     return None
 
 
-def write_output(text, stdout_file=None):
+def write_output(text, stdout_file=None, append=False):
     if stdout_file:
-        with open(stdout_file, "w") as f:
+        mode = "a" if append else "w"
+
+        with open(stdout_file, mode) as f:
             f.write(text + "\n")
     else:
         print(text)
@@ -51,8 +53,21 @@ def main():
 
         stdout_file = None
         stderr_file = None
+        append_stdout = False
 
-        if ">" in parts:
+        if ">>" in parts:
+            idx = parts.index(">>")
+            stdout_file = parts[idx + 1]
+            append_stdout = True
+            parts = parts[:idx]
+
+        elif "1>>" in parts:
+            idx = parts.index("1>>")
+            stdout_file = parts[idx + 1]
+            append_stdout = True
+            parts = parts[:idx]
+
+        elif ">" in parts:
             idx = parts.index(">")
             stdout_file = parts[idx + 1]
             parts = parts[:idx]
@@ -67,7 +82,6 @@ def main():
             stderr_file = parts[idx + 1]
             parts = parts[:idx]
 
-        # Create empty stderr file if 2> was used
         if stderr_file:
             open(stderr_file, "w").close()
 
@@ -80,10 +94,18 @@ def main():
             break
 
         elif cmd == "echo":
-            write_output(" ".join(parts[1:]), stdout_file)
+            write_output(
+                " ".join(parts[1:]),
+                stdout_file,
+                append_stdout
+            )
 
         elif cmd == "pwd":
-            write_output(os.getcwd(), stdout_file)
+            write_output(
+                os.getcwd(),
+                stdout_file,
+                append_stdout
+            )
 
         elif cmd == "cd":
             path = os.path.expanduser(parts[1])
@@ -102,7 +124,8 @@ def main():
             if target in BUILTINS:
                 write_output(
                     f"{target} is a shell builtin",
-                    stdout_file
+                    stdout_file,
+                    append_stdout
                 )
             else:
                 executable = find_executable(target)
@@ -110,12 +133,14 @@ def main():
                 if executable:
                     write_output(
                         f"{target} is {executable}",
-                        stdout_file
+                        stdout_file,
+                        append_stdout
                     )
                 else:
                     write_output(
                         f"{target}: not found",
-                        stdout_file
+                        stdout_file,
+                        append_stdout
                     )
 
         else:
@@ -124,7 +149,9 @@ def main():
             if executable:
 
                 if stdout_file:
-                    with open(stdout_file, "w") as f:
+                    mode = "a" if append_stdout else "w"
+
+                    with open(stdout_file, mode) as f:
                         subprocess.run(
                             [cmd] + parts[1:],
                             stdout=f
