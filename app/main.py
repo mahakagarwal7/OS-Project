@@ -18,6 +18,14 @@ def find_executable(command):
     return None
 
 
+def write_output(text, stdout_file=None):
+    if stdout_file:
+        with open(stdout_file, "w") as f:
+            f.write(text + "\n")
+    else:
+        print(text)
+
+
 def main():
     while True:
         sys.stdout.write("$ ")
@@ -33,16 +41,31 @@ def main():
         if not parts:
             continue
 
+        stdout_file = None
+
+        if ">" in parts:
+            idx = parts.index(">")
+            stdout_file = parts[idx + 1]
+            parts = parts[:idx]
+
+        elif "1>" in parts:
+            idx = parts.index("1>")
+            stdout_file = parts[idx + 1]
+            parts = parts[:idx]
+
+        if not parts:
+            continue
+
         cmd = parts[0]
 
         if cmd == "exit":
             break
 
         elif cmd == "echo":
-            print(" ".join(parts[1:]))
+            write_output(" ".join(parts[1:]), stdout_file)
 
         elif cmd == "pwd":
-            print(os.getcwd())
+            write_output(os.getcwd(), stdout_file)
 
         elif cmd == "cd":
             path = os.path.expanduser(parts[1])
@@ -56,20 +79,24 @@ def main():
             target = parts[1]
 
             if target in BUILTINS:
-                print(f"{target} is a shell builtin")
+                write_output(f"{target} is a shell builtin", stdout_file)
             else:
                 executable = find_executable(target)
 
                 if executable:
-                    print(f"{target} is {executable}")
+                    write_output(f"{target} is {executable}", stdout_file)
                 else:
-                    print(f"{target}: not found")
+                    write_output(f"{target}: not found", stdout_file)
 
         else:
             executable = find_executable(cmd)
 
             if executable:
-                subprocess.run([cmd] + parts[1:])
+                if stdout_file:
+                    with open(stdout_file, "w") as f:
+                        subprocess.run([cmd] + parts[1:], stdout=f)
+                else:
+                    subprocess.run([cmd] + parts[1:])
             else:
                 print(f"{command}: command not found")
 
