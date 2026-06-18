@@ -28,9 +28,11 @@ def write_output(text, stdout_file=None, append=False):
         print(text)
 
 
-def write_error(text, stderr_file=None):
+def write_error(text, stderr_file=None, append=False):
     if stderr_file:
-        with open(stderr_file, "w") as f:
+        mode = "a" if append else "w"
+
+        with open(stderr_file, mode) as f:
             f.write(text + "\n")
     else:
         print(text)
@@ -54,6 +56,7 @@ def main():
         stdout_file = None
         stderr_file = None
         append_stdout = False
+        append_stderr = False
 
         if ">>" in parts:
             idx = parts.index(">>")
@@ -65,6 +68,12 @@ def main():
             idx = parts.index("1>>")
             stdout_file = parts[idx + 1]
             append_stdout = True
+            parts = parts[:idx]
+
+        elif "2>>" in parts:
+            idx = parts.index("2>>")
+            stderr_file = parts[idx + 1]
+            append_stderr = True
             parts = parts[:idx]
 
         elif ">" in parts:
@@ -82,7 +91,7 @@ def main():
             stderr_file = parts[idx + 1]
             parts = parts[:idx]
 
-        if stderr_file:
+        if stderr_file and not append_stderr:
             open(stderr_file, "w").close()
 
         if not parts:
@@ -115,7 +124,8 @@ def main():
             else:
                 write_error(
                     f"cd: {parts[1]}: No such file or directory",
-                    stderr_file
+                    stderr_file,
+                    append_stderr
                 )
 
         elif cmd == "type":
@@ -158,7 +168,9 @@ def main():
                         )
 
                 elif stderr_file:
-                    with open(stderr_file, "w") as f:
+                    mode = "a" if append_stderr else "w"
+
+                    with open(stderr_file, mode) as f:
                         subprocess.run(
                             [cmd] + parts[1:],
                             stderr=f
@@ -170,7 +182,8 @@ def main():
             else:
                 write_error(
                     f"{command}: command not found",
-                    stderr_file
+                    stderr_file,
+                    append_stderr
                 )
 
 
