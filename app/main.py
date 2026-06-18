@@ -3,7 +3,7 @@ import os
 import subprocess
 import shlex
 
-BUILTINS = ["echo", "exit", "type", "pwd", "cd"]
+BUILTINS = ["echo", "exit", "type", "pwd", "cd", "jobs"]
 
 
 def find_executable(command):
@@ -127,6 +127,9 @@ def main():
                     stderr_file,
                     append_stderr
                 )
+
+        elif cmd == "jobs":
+            pass
 
         elif cmd == "type":
             target = parts[1]
