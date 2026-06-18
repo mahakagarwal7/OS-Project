@@ -48,7 +48,10 @@ def main():
         sys.stdout.write("$ ")
         sys.stdout.flush()
 
-        command = input().strip()
+        try:
+            command = input().strip()
+        except EOFError:
+            break
 
         try:
             parts = shlex.split(command)
@@ -140,7 +143,11 @@ def main():
                 )
 
         elif cmd == "jobs":
-            pass
+            for job in jobs:
+                if job["process"].poll() is None:
+                    print(
+                        f"[{job['id']}]+ Running                 {job['command']} &"
+                    )
 
         elif cmd == "type":
             target = parts[1]
@@ -180,7 +187,8 @@ def main():
                     jobs.append({
                         "id": next_job_id,
                         "pid": process.pid,
-                        "process": process
+                        "process": process,
+                        "command": " ".join(parts)
                     })
 
                     print(f"[{next_job_id}] {process.pid}")
