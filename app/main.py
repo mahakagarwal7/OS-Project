@@ -5,6 +5,9 @@ import shlex
 
 BUILTINS = ["echo", "exit", "type", "pwd", "cd", "jobs"]
 
+jobs = []
+next_job_id = 1
+
 
 def find_executable(command):
     path_dirs = os.environ.get("PATH", "").split(os.pathsep)
@@ -39,6 +42,8 @@ def write_error(text, stderr_file=None, append=False):
 
 
 def main():
+    global next_job_id
+
     while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
@@ -90,6 +95,12 @@ def main():
             idx = parts.index("2>")
             stderr_file = parts[idx + 1]
             parts = parts[:idx]
+
+        background = False
+
+        if parts and parts[-1] == "&":
+            background = True
+            parts = parts[:-1]
 
         if stderr_file and not append_stderr:
             open(stderr_file, "w").close()
@@ -161,7 +172,21 @@ def main():
 
             if executable:
 
-                if stdout_file:
+                if background:
+                    process = subprocess.Popen(
+                        [cmd] + parts[1:]
+                    )
+
+                    jobs.append({
+                        "id": next_job_id,
+                        "pid": process.pid,
+                        "process": process
+                    })
+
+                    print(f"[{next_job_id}] {process.pid}")
+                    next_job_id += 1
+
+                elif stdout_file:
                     mode = "a" if append_stdout else "w"
 
                     with open(stdout_file, mode) as f:
