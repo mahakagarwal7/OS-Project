@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import shlex
 
 BUILTINS = ["echo", "exit", "type", "pwd", "cd"]
 
@@ -24,7 +25,10 @@ def main():
 
         command = input().strip()
 
-        parts = command.split()
+        try:
+            parts = shlex.split(command)
+        except ValueError:
+            continue
 
         if not parts:
             continue
