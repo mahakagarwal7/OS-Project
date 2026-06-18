@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-BUILTINS = ["echo", "exit", "type"]
+BUILTINS = ["echo", "exit", "type", "pwd"]
 
 
 def find_executable(command):
@@ -36,6 +36,9 @@ def main():
 
         elif cmd == "echo":
             print(" ".join(parts[1:]))
+
+        elif cmd == "pwd":
+            print(os.getcwd())
 
         elif cmd == "type":
             target = parts[1]
