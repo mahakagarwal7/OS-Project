@@ -41,12 +41,12 @@ def main():
             print(os.getcwd())
 
         elif cmd == "cd":
-            path = parts[1]
+            path = os.path.expanduser(parts[1])
 
             if os.path.isdir(path):
                 os.chdir(path)
             else:
-                print(f"cd: {path}: No such file or directory")
+                print(f"cd: {parts[1]}: No such file or directory")
 
         elif cmd == "type":
             target = parts[1]
