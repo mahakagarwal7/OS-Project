@@ -26,6 +26,14 @@ def write_output(text, stdout_file=None):
         print(text)
 
 
+def write_error(text, stderr_file=None):
+    if stderr_file:
+        with open(stderr_file, "w") as f:
+            f.write(text + "\n")
+    else:
+        print(text)
+
+
 def main():
     while True:
         sys.stdout.write("$ ")
@@ -42,6 +50,7 @@ def main():
             continue
 
         stdout_file = None
+        stderr_file = None
 
         if ">" in parts:
             idx = parts.index(">")
@@ -52,6 +61,15 @@ def main():
             idx = parts.index("1>")
             stdout_file = parts[idx + 1]
             parts = parts[:idx]
+
+        elif "2>" in parts:
+            idx = parts.index("2>")
+            stderr_file = parts[idx + 1]
+            parts = parts[:idx]
+
+        # Create empty stderr file if 2> was used
+        if stderr_file:
+            open(stderr_file, "w").close()
 
         if not parts:
             continue
@@ -73,32 +91,60 @@ def main():
             if os.path.isdir(path):
                 os.chdir(path)
             else:
-                print(f"cd: {parts[1]}: No such file or directory")
+                write_error(
+                    f"cd: {parts[1]}: No such file or directory",
+                    stderr_file
+                )
 
         elif cmd == "type":
             target = parts[1]
 
             if target in BUILTINS:
-                write_output(f"{target} is a shell builtin", stdout_file)
+                write_output(
+                    f"{target} is a shell builtin",
+                    stdout_file
+                )
             else:
                 executable = find_executable(target)
 
                 if executable:
-                    write_output(f"{target} is {executable}", stdout_file)
+                    write_output(
+                        f"{target} is {executable}",
+                        stdout_file
+                    )
                 else:
-                    write_output(f"{target}: not found", stdout_file)
+                    write_output(
+                        f"{target}: not found",
+                        stdout_file
+                    )
 
         else:
             executable = find_executable(cmd)
 
             if executable:
+
                 if stdout_file:
                     with open(stdout_file, "w") as f:
-                        subprocess.run([cmd] + parts[1:], stdout=f)
+                        subprocess.run(
+                            [cmd] + parts[1:],
+                            stdout=f
+                        )
+
+                elif stderr_file:
+                    with open(stderr_file, "w") as f:
+                        subprocess.run(
+                            [cmd] + parts[1:],
+                            stderr=f
+                        )
+
                 else:
                     subprocess.run([cmd] + parts[1:])
+
             else:
-                print(f"{command}: command not found")
+                write_error(
+                    f"{command}: command not found",
+                    stderr_file
+                )
 
 
 if __name__ == "__main__":
