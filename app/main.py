@@ -143,26 +143,36 @@ def main():
                 )
 
         elif cmd == "jobs":
-            running_jobs = [
-                job for job in jobs
-                if job["process"].poll() is None
-            ]
+            completed_jobs = []
 
-            total = len(running_jobs)
+            total = len(jobs)
 
-            for index, job in enumerate(running_jobs):
-                 marker = " "
+            for index, job in enumerate(jobs):
 
-                 if total >= 1 and index == total - 1:
-                     marker = "+"
+                marker = " "
 
-                 elif total >= 2 and index == total - 2:
-                     marker = "-"
+                if total >= 1 and index == total - 1:
+                    marker = "+"
 
-                 print(
-                     f"[{job['id']}]{marker} Running                 {job['command']} &"
-                 )
+                elif total >= 2 and index == total - 2:
+                    marker = "-"
 
+                if job["process"].poll() is None:
+                    print(
+                        f"[{job['id']}]{marker} Running                 {job['command']} &"
+                    )
+
+                else:
+                    print(
+                        f"[{job['id']}]{marker} Done                    {job['command']}"
+                    )
+
+                    job["process"].wait()
+                    completed_jobs.append(job)
+
+            for job in completed_jobs:
+                if job in jobs:
+                    jobs.remove(job)
         elif cmd == "type":
             target = parts[1]
 
