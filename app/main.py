@@ -1,18 +1,35 @@
 import sys
 
+BUILTINS = ["echo", "exit", "type"]
+
 
 def main():
-   while True:
+    while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
 
-        command = input()
+        command = input().strip()
 
-        if command == "exit":
+        parts = command.split()
+
+        if not parts:
+            continue
+
+        cmd = parts[0]
+
+        if cmd == "exit":
             break
 
-        elif command.startswith("echo "):
-            print(command[5:])
+        elif cmd == "echo":
+            print(" ".join(parts[1:]))
+
+        elif cmd == "type":
+            target = parts[1]
+
+            if target in BUILTINS:
+                print(f"{target} is a shell builtin")
+            else:
+                print(f"{target}: not found")
 
         else:
             print(f"{command}: command not found")
