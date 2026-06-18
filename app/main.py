@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-BUILTINS = ["echo", "exit", "type", "pwd"]
+BUILTINS = ["echo", "exit", "type", "pwd", "cd"]
 
 
 def find_executable(command):
@@ -39,6 +39,14 @@ def main():
 
         elif cmd == "pwd":
             print(os.getcwd())
+
+        elif cmd == "cd":
+            path = parts[1]
+
+            if os.path.isdir(path):
+                os.chdir(path)
+            else:
+                print(f"cd: {path}: No such file or directory")
 
         elif cmd == "type":
             target = parts[1]
