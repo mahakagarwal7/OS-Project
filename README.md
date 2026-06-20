@@ -1,8 +1,11 @@
 [![progress-banner](https://backend.codecrafters.io/progress/shell/b2736693-3496-40b8-929f-b7b397c32412)](https://app.codecrafters.io/users/mahakagarwal7?r=2qF)
 **Project : OS SHELL**
-**Name : Mahak Agarwal**
-**Batch : B**
-**Roll_No : 25bcs10489**
+
+ **Name : Mahak Agarwal**
+
+ **Batch : B**
+
+ **Roll_No : 25bcs10489**
 
 This is a starting point for Python solutions to the
 ["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
